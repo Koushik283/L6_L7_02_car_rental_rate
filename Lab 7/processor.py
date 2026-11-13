@@ -1,21 +1,74 @@
+
 def sanitize_license_plate(plate):
+    if not isinstance(plate, str):
+        return ""
+
     plate = plate.strip()
+
     for ch in ['-', ' ', '_', '#']:
         plate = plate.replace(ch, '')
+
     return plate.upper()
 
+
 def parse_trip_mileage(mileage_csv):
-    parts = mileage_csv.split(',')
-    return [float(m) for m in parts]
+    if not isinstance(mileage_csv, str):
+        return []
+
+    if not mileage_csv.strip():
+        return []
+
+    try:
+        parts = mileage_csv.split(',')
+        mileages = []
+
+        for m in parts:
+            value = m.strip()
+
+            if not value:
+                return []
+
+            mileage = float(value)
+
+            if mileage < 0:
+                return []
+
+            mileages.append(mileage)
+
+        return mileages
+
+    except ValueError:
+        return []
+
 
 def format_rental_invoice(record):
-    parts = record.split(':')
-    driver = parts[0].strip()
-    days = int(parts[1])
-    category = parts[2].strip()
-    daily_rate = 50.0 if category.lower() == "suv" else 30.0
-    total = days * daily_rate
-    return f"Driver {driver} booked {category} for {days} days: Total ${total:.2f}"
+    if not isinstance(record, str):
+        return "Invalid rental record"
+
+    try:
+        parts = record.split(':')
+
+        if len(parts) != 3:
+            return "Invalid rental record"
+
+        driver = parts[0].strip()
+        days = int(parts[1].strip())
+        category = parts[2].strip()
+
+        if not driver or not category or days <= 0:
+            return "Invalid rental record"
+
+        daily_rate = 50.0 if category.lower() == "suv" else 30.0
+        total = days * daily_rate
+
+        return (
+            f"Driver {driver} booked {category} "
+            f"for {days} days: Total ${total:.2f}"
+        )
+
+    except ValueError:
+        return "Invalid rental record"
+
 
 def main():
     print("==== Running sanitize_license_plate ====")
@@ -32,6 +85,7 @@ def main():
     record_input = input("Enter rental record (Driver:Days:Category): ")
     invoice = format_rental_invoice(record_input)
     print("Rental Invoice:", invoice)
+
 
 if __name__ == "__main__":
     main()
